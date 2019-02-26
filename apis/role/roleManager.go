@@ -2,11 +2,11 @@ package role
 
 import (
 	"github.com/gin-gonic/gin"
-	"time"
-	"github.com/iodsp/user_center/models/fionaUserCenter"
-	"github.com/iodsp/user_center/common"
 	"github.com/iodsp/user_center/apis"
+	"github.com/iodsp/user_center/common"
+	"github.com/iodsp/user_center/models/fionaUserCenter"
 	"strconv"
+	"time"
 )
 
 type Params struct {
@@ -29,12 +29,12 @@ func Store(c *gin.Context) {
 
 	if err == nil {
 		if (name == "") {
-			apis.FormatResponseWithoutData(c, common.PARAM_ERROR_CODE, common.NAME_EMPTY_MSG)
+			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.NameEmptyMsg)
 			return
 		}
 
 		if !common.DB.Where(&fionaUserCenter.Role{Name: name}).First(&role).RecordNotFound() {
-			apis.FormatResponseWithoutData(c, common.PARSE_PARAM_ERROR_CODE, common.NAME_UNIQUE_MSG)
+			apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.NameUniqueMsg)
 			return
 		}
 		createTime := time.Now()
@@ -46,12 +46,12 @@ func Store(c *gin.Context) {
 		}).Error
 
 		if insertErr == nil {
-			apis.FormatResponseWithoutData(c, common.SUCCESS_CODE, common.SVAE_SUCCESS_MSG)
+			apis.FormatResponseWithoutData(c, common.SE_CODE, common.SaveSuccessMsg)
 		} else {
-			apis.FormatResponseWithoutData(c, common.FAILURE_CODE, common.SAVE_FAILURE_MSG)
+			apis.FormatResponseWithoutData(c, common.FailureCode, common.SaveFailureMsg)
 		}
 	} else {
-		apis.FormatResponseWithoutData(c, common.PARSE_PARAM_ERROR_CODE, common.PARSE_PARAM_ERROR_MSG)
+		apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.ParseParamErrorMsg)
 	}
 }
 
@@ -61,11 +61,11 @@ func Show(c *gin.Context) {
 	var role fionaUserCenter.Role
 
 	if common.DB.Where(&fionaUserCenter.Role{Id: id}).First(&role).RecordNotFound() {
-		apis.FormatResponseWithoutData(c, common.PARSE_PARAM_ERROR_CODE, common.ROLE_NOT_FOUND_MSG)
+		apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.RoleNotFoundMsg)
 		return
 	}
 
-	apis.FormatResponse(c, common.SUCCESS_CODE, "", &item{
+	apis.FormatResponse(c, common.SuccessCode, "", &item{
 		role.Id,
 		role.Name,
 		role.UpdatedAt,
@@ -76,7 +76,7 @@ func Show(c *gin.Context) {
 func RoleList(c *gin.Context) {
 	var roles []fionaUserCenter.Role
 	common.DB.Model(&fionaUserCenter.Role{}).Find(&roles)
-	apis.FormatResponse(c, common.SUCCESS_CODE, "", &roles)
+	apis.FormatResponse(c, common.SuccessCode, "", &roles)
 }
 
 func Update(c *gin.Context) {
@@ -88,17 +88,17 @@ func Update(c *gin.Context) {
 	if err == nil {
 		var role fionaUserCenter.Role
 		if common.DB.Model(fionaUserCenter.Role{}).Where("id=?", id).First(&role).RecordNotFound() {
-			apis.FormatResponseWithoutData(c, common.PARSE_PARAM_ERROR_CODE, common.ROLE_NOT_FOUND_MSG)
+			apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.RoleNotFoundMsg)
 		}
 		name := params.Name
 		var tmpRole fionaUserCenter.Role
 
 		//目前只有这一个参数
 		if name == "" {
-			apis.FormatResponseWithoutData(c, common.PARSE_PARAM_ERROR_CODE, common.NOTHING_TO_UPDATE)
+			apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.NothingToUpdate)
 			return
 		} else if !common.DB.Find(&tmpRole, " name = ? AND id <> ?", name, id).RecordNotFound() {
-			apis.FormatResponseWithoutData(c, common.PARSE_PARAM_ERROR_CODE, common.NAME_UNIQUE_MSG)
+			apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.NameUniqueMsg)
 			return
 		} else {
 			role.Name = params.Name
@@ -107,12 +107,12 @@ func Update(c *gin.Context) {
 
 		updateErr := common.DB.Save(role)
 		if updateErr == nil {
-			apis.FormatResponseWithoutData(c, common.SUCCESS_CODE, common.UPDATE_SUCCESS_MSG)
+			apis.FormatResponseWithoutData(c, common.SuccessCode, common.UpdateSuccessMsg)
 		} else {
-			apis.FormatResponseWithoutData(c, common.FAILURE_CODE, common.UPDATE_SUCCESS_MSG)
+			apis.FormatResponseWithoutData(c, common.FailureCode, common.UpdateSuccessMsg)
 		}
 	} else {
-		apis.FormatResponseWithoutData(c, common.PARSE_PARAM_ERROR_CODE, common.PARSE_PARAM_ERROR_MSG)
+		apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.ParseParamErrorMsg)
 	}
 }
 
@@ -121,14 +121,14 @@ func DeleteRole(c *gin.Context) {
 	id := c.Param("id")
 	var role fionaUserCenter.Role
 	if common.DB.Model(fionaUserCenter.Role{}).Where("id=?", id).First(&role).RecordNotFound() {
-		apis.FormatResponseWithoutData(c, common.PARSE_PARAM_ERROR_CODE, common.ROLE_NOT_FOUND_MSG)
+		apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.RoleNotFoundMsg)
 		return
 	}
 
 	delError := common.DB.Delete(&role).Error
 	if (delError == nil) {
-		apis.FormatResponseWithoutData(c, common.SUCCESS_CODE, common.DELETE_SUCCESS_MSG)
+		apis.FormatResponseWithoutData(c, common.SuccessCode, common.DeleteSuccessMsg)
 	} else {
-		apis.FormatResponseWithoutData(c, common.FAILURE_CODE, common.DELETE_FAILURE_MSG)
+		apis.FormatResponseWithoutData(c, common.FailureCode, common.DeleteFailureMsg)
 	}
 }

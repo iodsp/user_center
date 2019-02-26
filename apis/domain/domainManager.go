@@ -2,11 +2,11 @@ package domain
 
 import (
 	"github.com/gin-gonic/gin"
-	"time"
+	"github.com/iodsp/user_center/apis"
 	"github.com/iodsp/user_center/common"
 	"github.com/iodsp/user_center/models/fionaUserCenter"
-	"github.com/iodsp/user_center/apis"
 	"strconv"
+	"time"
 )
 
 type Params struct {
@@ -38,17 +38,17 @@ func Store(c *gin.Context) {
 
 	if err == nil {
 		if (name == "") {
-			apis.FormatResponseWithoutData(c, common.PARAM_ERROR_CODE, common.NAME_EMPTY_MSG)
+			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.NameEmptyMsg)
 			return
 		}
 
 		if domainType != 1 && domainType != 2 {
-			apis.FormatResponseWithoutData(c, common.PARAM_ERROR_CODE, common.DOMAIN_TYPE_ERROR_MSG)
+			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.DomainTypeErrorMsg)
 			return
 		}
 
 		if !common.DB.Where(&fionaUserCenter.Domain{Name: name}).First(&domain).RecordNotFound() {
-			apis.FormatResponseWithoutData(c, common.PARSE_PARAM_ERROR_CODE, common.NAME_UNIQUE_MSG)
+			apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.NameUniqueMsg)
 			return
 		}
 		createTime := time.Now()
@@ -61,12 +61,12 @@ func Store(c *gin.Context) {
 		}).Error
 
 		if insertErr == nil {
-			apis.FormatResponseWithoutData(c, common.SUCCESS_CODE, common.STORE_DOMAIN_SUCCESS)
+			apis.FormatResponseWithoutData(c, common.SuccessCode, common.StoreDomainSuccess)
 		} else {
-			apis.FormatResponseWithoutData(c, common.FAILURE_CODE, common.STORE_DOMAIN_FAILURE)
+			apis.FormatResponseWithoutData(c, common.FailureCode, common.StoreDomainFailure)
 		}
 	} else {
-		apis.FormatResponseWithoutData(c, common.PARSE_PARAM_ERROR_CODE, common.PARSE_PARAM_ERROR_MSG)
+		apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.ParseParamErrorMsg)
 	}
 }
 
@@ -74,10 +74,10 @@ func Show(c *gin.Context) {
 	var domain fionaUserCenter.Domain
 	id := c.Param("id")
 	if common.DB.Model(&fionaUserCenter.Domain{}).Where("id = ?", id).First(&domain).RecordNotFound() {
-		apis.FormatResponseWithoutData(c, common.PARAM_ERROR_CODE, common.DOMAIN_NOT_EXITS_MSG)
+		apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.DomainNotFoundMsg)
 		return
 	}
-	apis.FormatResponse(c, common.SUCCESS_CODE, "", &item{
+	apis.FormatResponse(c, common.SuccessCode, "", &item{
 		domain.Id,
 		domain.Name,
 		domain.Type,
@@ -89,7 +89,7 @@ func Show(c *gin.Context) {
 func DomainList(c *gin.Context) {
 	var domain = []fionaUserCenter.Domain{}
 	common.DB.Find(&domain)
-	apis.FormatResponse(c, common.SUCCESS_CODE, "", domain)
+	apis.FormatResponse(c, common.SuccessCode, "", domain)
 }
 
 func Update(c *gin.Context) {
@@ -103,19 +103,19 @@ func Update(c *gin.Context) {
 
 	if (err == nil) {
 		if common.DB.Model(&fionaUserCenter.Domain{}).Where("id = ?", id).First(&domain).RecordNotFound() {
-			apis.FormatResponseWithoutData(c, common.PARAM_ERROR_CODE, common.DOMAIN_NOT_EXITS_MSG)
+			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.DomainNotFoundMsg)
 			return
 		}
 
 		if name != "" {
 			var tmpDomain fionaUserCenter.Domain
 			if !common.DB.Find(&tmpDomain, " name = ? AND id <> ?", name, id).RecordNotFound() {
-				apis.FormatResponseWithoutData(c, common.PARAM_ERROR_CODE, common.NAME_UNIQUE_MSG)
+				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.NameUniqueMsg)
 				return
 			}
 			domain.Name = name
 		} else if (domainType == 0 && name == "") {
-			apis.FormatResponseWithoutData(c, common.PARAM_ERROR_CODE, common.NOTHING_TO_UPDATE)
+			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.NothingToUpdate)
 			return
 		}
 
@@ -124,7 +124,7 @@ func Update(c *gin.Context) {
 		}
 
 		if domainType != 1 && domainType != 2 {
-			apis.FormatResponseWithoutData(c, common.PARAM_ERROR_CODE, common.DOMAIN_TYPE_ERROR_MSG)
+			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.DomainTypeErrorMsg)
 			return
 		}
 
@@ -133,14 +133,14 @@ func Update(c *gin.Context) {
 		if upError != nil {
 			c.JSON(200, gin.H{"er": upError})
 			return
-			apis.FormatResponseWithoutData(c, common.FAILURE_CODE, common.UPDATE_FAILURE_MSG)
+			apis.FormatResponseWithoutData(c, common.FailureCode, common.UpdateFailureMsg)
 			return
 		} else {
-			apis.FormatResponseWithoutData(c, common.FAILURE_CODE, common.UPDATE_SUCCESS_MSG)
+			apis.FormatResponseWithoutData(c, common.FailureCode, common.UpdateSuccessMsg)
 			return
 		}
 	} else {
-		apis.FormatResponseWithoutData(c, common.PARSE_PARAM_ERROR_CODE, common.PARSE_PARAM_ERROR_MSG)
+		apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.ParseParamErrorMsg)
 	}
 }
 
@@ -148,14 +148,14 @@ func DeleteDomain(c *gin.Context) {
 	id := c.Param("id")
 	var domain fionaUserCenter.Domain
 	if common.DB.Model(fionaUserCenter.Role{}).Where("id=?", id).First(&domain).RecordNotFound() {
-		apis.FormatResponseWithoutData(c, common.PARSE_PARAM_ERROR_CODE, common.ROLE_NOT_FOUND_MSG)
+		apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.RoleNotFoundMsg)
 		return
 	}
 
 	delError := common.DB.Delete(&domain).Error
 	if (delError == nil) {
-		apis.FormatResponseWithoutData(c, common.SUCCESS_CODE, common.DELETE_SUCCESS_MSG)
+		apis.FormatResponseWithoutData(c, common.SuccessCode, common.DeleteSuccessMsg)
 	} else {
-		apis.FormatResponseWithoutData(c, common.FAILURE_CODE, common.DELETE_FAILURE_MSG)
+		apis.FormatResponseWithoutData(c, common.FailureCode, common.DeleteFailureMsg)
 	}
 }

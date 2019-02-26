@@ -1,4 +1,4 @@
-module user_center
+module github.com/iodsp/user_center
 
 require (
 	cloud.google.com/go v0.36.0 // indirect
@@ -8,7 +8,6 @@ require (
 	github.com/gin-gonic/gin v1.3.0
 	github.com/go-sql-driver/mysql v0.0.0-20190127011111-1b9eda25029c // indirect
 	github.com/gofrs/uuid v3.2.0+incompatible // indirect
-	github.com/iodsp/user_center v0.0.0-20190213105132-9991a9b0365c
 	github.com/jinzhu/gorm v0.0.0-20190210073940-906799fef2f8
 	github.com/jinzhu/inflection v0.0.0-20180308033659-04140366298a // indirect
 	github.com/jinzhu/now v1.0.0 // indirect

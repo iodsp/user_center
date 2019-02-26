@@ -1,10 +1,9 @@
 package common
 
-const SUCCESS_CODE = 10000
-const FAILURE_CODE = 100001
-const HTTP_SUCCESS_CODE = 200
-
+const SuccessCode = 10000
+const FailureCode = 100001
+const HttpSuccessCode = 200
 
 //参数相关
-const PARSE_PARAM_ERROR_CODE = 20001
-const PARAM_ERROR_CODE = 20002
+const ParseParamErrorCode = 20001
+const ParamErrorCode = 20002

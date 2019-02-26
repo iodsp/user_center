@@ -17,7 +17,7 @@ type resultWithoutDate struct {
 }
 
 func FormatResponse(c *gin.Context, code int, msg string, data interface{}) {
-	c.JSON(common.HTTP_SUCCESS_CODE, &result{
+	c.JSON(common.HttpSuccessCode, &result{
 		code,
 		msg,
 		data,
@@ -25,7 +25,7 @@ func FormatResponse(c *gin.Context, code int, msg string, data interface{}) {
 }
 
 func FormatResponseWithoutData(c *gin.Context, code int, msg string){
-	c.JSON(common.HTTP_SUCCESS_CODE, &resultWithoutDate{
+	c.JSON(common.HttpSuccessCode, &resultWithoutDate{
 		code,
 		msg,
 	})

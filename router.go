@@ -1,4 +1,5 @@
 package main
+/*
 
 import (
 	"github.com/gin-gonic/gin"
@@ -22,4 +23,4 @@ func routers() *gin.Engine {
 	r.POST("/role/delete/:id", role.DeleteRole)
 
 	return r
-}
+}*/

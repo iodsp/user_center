@@ -4,131 +4,134 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/iodsp/user_center/apis"
 	"github.com/iodsp/user_center/common"
-	"github.com/iodsp/user_center/models/fionaUserCenter"
+	"github.com/iodsp/user_center/params"
+	"github.com/iodsp/user_center/context"
+	"github.com/iodsp/user_center/user_center"
 	"strconv"
 	"time"
 )
 
-type Params struct {
-	Id   int    `json:"primary_key"`
-	Name string `json:"name" binding:"required"`
-}
+func Store(router *gin.RouterGroup, conf *context.Config) {
+	router.POST("/store", func(c *gin.Context) {
+		var param params.RoleParams
+		err := c.BindJSON(&param)
+		name := param.Name
+		role := user_center.NewRole(conf.Db())
 
-type item struct {
-	Id        int       `json:"primary_key"`
-	Name      string    `json:"name"`
-	UpdatedAt time.Time `json:"column:lastModTime"`
-	CreatedAt time.Time `json:"column:createdTime"`
-}
+		if err == nil {
+			if name == "" {
+				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.NameEmptyMsg)
+				return
+			}
 
-func Store(c *gin.Context) {
-	var params Params
-	err := c.BindJSON(&params)
-	name := params.Name
-	var role fionaUserCenter.Role
+			//todo 根据name 查找记录
 
-	if err == nil {
-		if (name == "") {
-			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.NameEmptyMsg)
-			return
-		}
+			//insert a new record
+			insertErr := role.Store(param)
 
-		if !common.DB.Where(&fionaUserCenter.Role{Name: name}).First(&role).RecordNotFound() {
-			apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.NameUniqueMsg)
-			return
-		}
-		createTime := time.Now()
-		updateTime := time.Now()
-		insertErr := common.DB.Create(&fionaUserCenter.Role{
-			Name:      params.Name,
-			CreatedAt: createTime,
-			UpdatedAt: updateTime,
-		}).Error
-
-		if insertErr == nil {
-			apis.FormatResponseWithoutData(c, common.SE_CODE, common.SaveSuccessMsg)
+			if insertErr == nil {
+				apis.FormatResponseWithoutData(c, common.SuccessCode, common.SaveSuccessMsg)
+			} else {
+				apis.FormatResponseWithoutData(c, common.FailureCode, common.SaveFailureMsg)
+			}
 		} else {
-			apis.FormatResponseWithoutData(c, common.FailureCode, common.SaveFailureMsg)
+			apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.ParseParamErrorMsg)
 		}
-	} else {
-		apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.ParseParamErrorMsg)
-	}
-}
-
-func Show(c *gin.Context) {
-	stringId := c.Param("id")
-	id, _ := strconv.Atoi(stringId)
-	var role fionaUserCenter.Role
-
-	if common.DB.Where(&fionaUserCenter.Role{Id: id}).First(&role).RecordNotFound() {
-		apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.RoleNotFoundMsg)
-		return
-	}
-
-	apis.FormatResponse(c, common.SuccessCode, "", &item{
-		role.Id,
-		role.Name,
-		role.UpdatedAt,
-		role.CreatedAt,
 	})
 }
 
-func RoleList(c *gin.Context) {
-	var roles []fionaUserCenter.Role
-	common.DB.Model(&fionaUserCenter.Role{}).Find(&roles)
-	apis.FormatResponse(c, common.SuccessCode, "", &roles)
-}
+func Show(router *gin.RouterGroup, conf *context.Config) {
+	router.GET("/role/show/:id", func(c *gin.Context) {
+		stringId := c.Param("id")
+		id, _ := strconv.Atoi(stringId)
+		role := user_center.NewRole(conf.Db())
 
-func Update(c *gin.Context) {
-	var params Params
-	idString := c.Param("id")
-	id, _ := strconv.Atoi(idString)
-	err := c.BindJSON(&params)
+		roleInfo := role.Show(id)
 
-	if err == nil {
-		var role fionaUserCenter.Role
-		if common.DB.Model(fionaUserCenter.Role{}).Where("id=?", id).First(&role).RecordNotFound() {
+		//todo 没找到记录的返回报错信息
+		/*if common.DB.Where(&fionaUserCenter.Role{Id: id}).First(&role).RecordNotFound() {
 			apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.RoleNotFoundMsg)
-		}
-		name := params.Name
-		var tmpRole fionaUserCenter.Role
-
-		//目前只有这一个参数
-		if name == "" {
-			apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.NothingToUpdate)
 			return
-		} else if !common.DB.Find(&tmpRole, " name = ? AND id <> ?", name, id).RecordNotFound() {
-			apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.NameUniqueMsg)
-			return
-		} else {
-			role.Name = params.Name
-			role.UpdatedAt = time.Now()
-		}
+		}*/
 
-		updateErr := common.DB.Save(role)
-		if updateErr == nil {
-			apis.FormatResponseWithoutData(c, common.SuccessCode, common.UpdateSuccessMsg)
-		} else {
-			apis.FormatResponseWithoutData(c, common.FailureCode, common.UpdateSuccessMsg)
-		}
-	} else {
-		apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.ParseParamErrorMsg)
-	}
+		apis.FormatResponse(c, common.SuccessCode, "", &params.Item{
+			Id:        roleInfo.Id,
+			Name:      roleInfo.Name,
+			UpdatedAt: roleInfo.UpdatedAt,
+			CreatedAt: roleInfo.CreatedAt,
+		})
+	})
 }
 
-//todo 这里可以改为更新，给删除的名字加一个时间戳或者其他的标记，这样就不会出现列表中不存在却不能添加的情况
-func DeleteRole(c *gin.Context) {
-	id := c.Param("id")
-	var role fionaUserCenter.Role
-	if common.DB.Model(fionaUserCenter.Role{}).Where("id=?", id).First(&role).RecordNotFound() {
-		apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.RoleNotFoundMsg)
-		return
-	}
 
-	delError := common.DB.Delete(&role).Error
-	if (delError == nil) {
-		apis.FormatResponseWithoutData(c, common.SuccessCode, common.DeleteSuccessMsg)
-	} else {
-		apis.FormatResponseWithoutData(c, common.FailureCode, common.DeleteFailureMsg)
-	}
+func List(router *gin.RouterGroup, conf *context.Config) {
+	router.GET("/role/list", func(c *gin.Context) {
+		role := user_center.NewRole(conf.Db())
+		result := role.List()
+		apis.FormatResponse(c, common.SuccessCode, "", result)
+	})
+}
+
+func Update(router *gin.RouterGroup, conf *context.Config) {
+	router.POST("/role/update/:id", func(c *gin.Context) {
+		var param params.RoleParams
+		idString := c.Param("id")
+		id, _ := strconv.Atoi(idString)
+		err := c.BindJSON(&param)
+		role := user_center.NewRole(conf.Db())
+
+		if err == nil {
+			roleInfo := role.Show(id)
+			//todo 判断更新的id记录是否存在
+			/*if common.DB.Model(fionaUserCenter.Role{}).Where("id=?", id).First(&role).RecordNotFound() {
+				apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.RoleNotFoundMsg)
+			}*/
+			name := param.Name
+
+			//目前只有这一个参数
+			if name == "" {
+				apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.NothingToUpdate)
+				return
+			} else {
+				roleInfo.Name = param.Name
+				roleInfo.UpdatedAt = time.Now()
+			}
+			/*else if !common.DB.Find(&tmpRole, " name = ? AND id <> ?", name, id).RecordNotFound() {
+			    todo 判断更新的名字是否与其他的已存在的记录名字重复
+				apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.NameUniqueMsg)
+				return
+			}*/
+
+			updateErr := role.Update(roleInfo)
+			if updateErr == nil {
+				apis.FormatResponseWithoutData(c, common.SuccessCode, common.UpdateSuccessMsg)
+			} else {
+				apis.FormatResponseWithoutData(c, common.FailureCode, common.UpdateSuccessMsg)
+			}
+		} else {
+			apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.ParseParamErrorMsg)
+		}
+	})
+}
+
+func DeleteRole(router *gin.RouterGroup, conf *context.Config) {
+	router.POST("/role/delete/:id", func(c *gin.Context) {
+		role := user_center.NewRole(conf.Db())
+		stringId := c.Param("id")
+		id, _ := strconv.Atoi(stringId)
+		roleInfo := role.Show(id)
+
+		//todo 判断要删除的id记录是否存在
+		/*if common.DB.Model(fionaUserCenter.Role{}).Where("id=?", id).First(&role).RecordNotFound() {
+			apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.RoleNotFoundMsg)
+			return
+		}*/
+
+		delError := role.Delete(roleInfo)
+		if delError == nil {
+			apis.FormatResponseWithoutData(c, common.SuccessCode, common.DeleteSuccessMsg)
+		} else {
+			apis.FormatResponseWithoutData(c, common.FailureCode, common.DeleteFailureMsg)
+		}
+	})
 }

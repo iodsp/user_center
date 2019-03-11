@@ -15,9 +15,9 @@ type UpdateDomainParams struct {
 }
 
 type DomainItem struct {
-	Id        int       `json:"primary_key"`
-	Name      string    `json:"name"`
-	Type      int       `json:"type"`
-	UpdatedAt time.Time `json:"lastModTime"`
-	CreatedAt time.Time `json:"createdTime"`
+	Id        int       `json:"Id "`
+	Name      string    `json:"Name"`
+	Type      int       `json:"Type"`
+	UpdatedAt time.Time `json:"UpdatedAt"`
+	CreatedAt time.Time `json:"CreatedAt"`
 }

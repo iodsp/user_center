@@ -10,9 +10,9 @@ type RoleParams struct {
 
 //role output param
 type Item struct {
-	Id        int       `json:"primary_key"`
-	Name      string    `json:"name"`
-	UpdatedAt time.Time `json:"column:lastModTime"`
-	CreatedAt time.Time `json:"column:createdTime"`
+	Id        int       `json:"Id"`
+	Name      string    `json:"Name"`
+	UpdatedAt time.Time `json:"UpdatedAt"`
+	CreatedAt time.Time `json:"CreatedAt"`
 }
 

@@ -14,13 +14,15 @@ type Domain struct {
 }
 
 //returns a new domain type with a given path and db instance
-func NewDomain(db *gorm.DB) *Domain {
+func NewDomain(db *gorm.DB, isDebug bool) *Domain {
+	if isDebug {
+		db.LogMode(true)
+	}
 	instance := &Domain{
 		db:            db,
 	}
 	return instance
 }
-
 
 // insert a new domain record
 func (r *Domain) StoreDomain(params params.DomainParams) error {
@@ -37,8 +39,14 @@ func (r *Domain) StoreDomain(params params.DomainParams) error {
 }
 
 //find a Domain by name
-func (r *Domain) ShowDomainByName(id int) (Domain fionaUserCenter.Domain){
-	r.db.Where(&fionaUserCenter.Domain{Id: id}).First(&Domain)
+func (r *Domain) ShowDomainByName(name string) (Domain fionaUserCenter.Domain){
+	r.db.Where(&fionaUserCenter.Domain{Name: name}).First(&Domain)
+	return Domain
+}
+
+//find a Domain by name not id
+func (r *Domain) ShowDomainByNameNotId(name string, id int) (Domain fionaUserCenter.Domain){
+	r.db.Where(&fionaUserCenter.Domain{Name: name}).Not("id", id).First(&Domain)
 	return Domain
 }
 
@@ -50,7 +58,7 @@ func (r *Domain) ShowDomain(id int) (Domain fionaUserCenter.Domain){
 
 //Domain list
 func (r *Domain) DomainList() (Domains []fionaUserCenter.Domain){
-	r.db.Model(&fionaUserCenter.Domain{}).Find(&Domains)
+	r.db.Model(&fionaUserCenter.Domain{}).Order("id desc").Find(&Domains)
 	return Domains
 }
 

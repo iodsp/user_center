@@ -4,9 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/iodsp/user_center/apis"
 	"github.com/iodsp/user_center/common"
+	"github.com/iodsp/user_center/context"
 	"github.com/iodsp/user_center/params"
 	"github.com/iodsp/user_center/user_center"
-	"github.com/iodsp/user_center/context"
 	"strconv"
 	"time"
 )
@@ -18,7 +18,7 @@ func Store(router *gin.RouterGroup, conf *context.Config) {
 		err := c.BindJSON(&param)
 		name := param.Name
 		domainType := param.Type
-		domainService := user_center.NewDomain(conf.Db())
+		domainService := user_center.NewDomain(conf.Db(), conf.Debug())
 
 		if err == nil {
 			if name == "" {
@@ -31,11 +31,12 @@ func Store(router *gin.RouterGroup, conf *context.Config) {
 				return
 			}
 
-			//todo 判断插入的name是否重复
-			/*if !common.DB.Where(&fionaUserCenter.Domain{Name: name}).First(&domain).RecordNotFound() {
-				apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.NameUniqueMsg)
+			//check duplicate name
+			domainInfo := domainService.ShowDomainByName(name)
+			if 0 != domainInfo.Id {
+				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.NameUniqueMsg)
 				return
-			}*/
+			}
 
 			insertErr := domainService.StoreDomain(param)
 			if insertErr == nil {
@@ -50,61 +51,62 @@ func Store(router *gin.RouterGroup, conf *context.Config) {
 }
 
 func Show(router *gin.RouterGroup, conf *context.Config) {
-	router.GET("/domain/show/:id", func(c *gin.Context) {
+	router.GET("/show/:id", func(c *gin.Context) {
 		stringId := c.Param("id")
 		id, _ := strconv.Atoi(stringId)
-		domainService := user_center.NewDomain(conf.Db())
+		domainService := user_center.NewDomain(conf.Db(), conf.Debug())
 
-		//todo 详情的id记录找不到报错
-		/*if common.DB.Model(&fionaUserCenter.Domain{}).Where("id = ?", id).First(&domain).RecordNotFound() {
+		//record not found
+		domainInfo := domainService.ShowDomain(id)
+		if 0 == domainInfo.Id{
 			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.DomainNotFoundMsg)
 			return
-		}*/
+		}
 
 		domain := domainService.ShowDomain(id)
 		apis.FormatResponse(c, common.SuccessCode, "", &params.DomainItem{
-			domain.Id,
-			domain.Name,
-			domain.Type,
-			domain.UpdatedAt,
-			domain.CreatedAt,
+			Id: domain.Id,
+			Name: domain.Name,
+			Type: domain.Type,
+			UpdatedAt: domain.UpdatedAt,
+			CreatedAt: domain.CreatedAt,
 		})
 	})
 }
 
 func List(router *gin.RouterGroup, conf *context.Config) {
-	router.GET("/domain/list", func(c *gin.Context) {
-		domainService := user_center.NewDomain(conf.Db())
+	router.GET("/list", func(c *gin.Context) {
+		domainService := user_center.NewDomain(conf.Db(), conf.Debug())
 		domain := domainService.DomainList()
 		apis.FormatResponse(c, common.SuccessCode, "", domain)
 	})
 }
 
 func Update(router *gin.RouterGroup, conf *context.Config) {
-	router.POST("/domain/update/:id", func(c *gin.Context) {
+	router.POST("/update/:id", func(c *gin.Context) {
 		var param params.UpdateDomainParams
 		err := c.BindJSON(&param);
 		idString := c.Param("id")
 		id, _ := strconv.Atoi(idString)
 		name := param.Name
 		domainType := param.Type
-		domainService := user_center.NewDomain(conf.Db())
+		domainService := user_center.NewDomain(conf.Db(), conf.Debug())
 
 		if err == nil {
 			domain := domainService.ShowDomain(id)
-			//todo 更新的id记录不存在
-			/*if common.DB.Model(&fionaUserCenter.Domain{}).Where("id = ?", id).First(&domain).RecordNotFound() {
+			//record not found
+			if 0 == domain.Id {
 				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.DomainNotFoundMsg)
 				return
-			}*/
+			}
 
 			if name != "" {
-				//var tmpDomain fionaUserCenter.Domain
-				//todo name不可重复
-				/*if !common.DB.Find(&tmpDomain, " name = ? AND id <> ?", name, id).RecordNotFound() {
+				//check duplicate name
+				domainInfo := domainService.ShowDomainByNameNotId(name, id)
+				if 0 != domainInfo.Id {
 					apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.NameUniqueMsg)
 					return
-				}*/
+				}
 				domain.Name = name
 			} else if domainType == 0 && name == "" {
 				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.NothingToUpdate)
@@ -123,7 +125,8 @@ func Update(router *gin.RouterGroup, conf *context.Config) {
 			domain.UpdatedAt = time.Now()
 			upError := domainService.UpdateDomain(domain)
 			if upError != nil {
-				c.JSON(200, gin.H{"er": upError})
+				//c.JSON(200, gin.H{"er": upError})
+				apis.FormatResponseWithoutData(c, common.FailureCode, common.UpdateFailureMsg)
 				return
 			} else {
 				apis.FormatResponseWithoutData(c, common.SuccessCode, common.UpdateSuccessMsg)
@@ -136,17 +139,17 @@ func Update(router *gin.RouterGroup, conf *context.Config) {
 }
 
 func DeleteDomain(router *gin.RouterGroup, conf *context.Config) {
-	router.POST("/domain/delete/:id", func(c *gin.Context) {
+	router.POST("/delete/:id", func(c *gin.Context) {
 		idString := c.Param("id")
 		id, _ := strconv.Atoi(idString)
-		domainService := user_center.NewDomain(conf.Db())
+		domainService := user_center.NewDomain(conf.Db(), conf.Debug())
 
-		//todo 删除的id记录不存在
+		//record not found
 		domain := domainService.ShowDomain(id)
-		/*if common.DB.Model(fionaUserCenter.Role{}).Where("id=?", id).First(&domain).RecordNotFound() {
-			apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.RoleNotFoundMsg)
+		if 0 == domain.Id {
+			apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.DomainNotFoundMsg)
 			return
-		}*/
+		}
 
 		delError := domainService.DeleteDomain(domain)
 		if delError == nil {

@@ -4,8 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/iodsp/user_center/apis"
 	"github.com/iodsp/user_center/common"
-	"github.com/iodsp/user_center/params"
 	"github.com/iodsp/user_center/context"
+	"github.com/iodsp/user_center/params"
 	"github.com/iodsp/user_center/user_center"
 	"strconv"
 	"time"
@@ -16,7 +16,7 @@ func Store(router *gin.RouterGroup, conf *context.Config) {
 		var param params.RoleParams
 		err := c.BindJSON(&param)
 		name := param.Name
-		role := user_center.NewRole(conf.Db())
+		role := user_center.NewRole(conf.Db(), conf.Debug())
 
 		if err == nil {
 			if name == "" {
@@ -24,7 +24,12 @@ func Store(router *gin.RouterGroup, conf *context.Config) {
 				return
 			}
 
-			//todo 根据name 查找记录
+			//check duplicate name
+			roleInfo := role.ShowByName(name)
+			if 0 != roleInfo.Id {
+				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.NameUniqueMsg)
+				return
+			}
 
 			//insert a new record
 			insertErr := role.Store(param)
@@ -41,18 +46,18 @@ func Store(router *gin.RouterGroup, conf *context.Config) {
 }
 
 func Show(router *gin.RouterGroup, conf *context.Config) {
-	router.GET("/role/show/:id", func(c *gin.Context) {
+	router.GET("/show/:id", func(c *gin.Context) {
 		stringId := c.Param("id")
 		id, _ := strconv.Atoi(stringId)
-		role := user_center.NewRole(conf.Db())
+		role := user_center.NewRole(conf.Db(), conf.Debug())
 
 		roleInfo := role.Show(id)
 
-		//todo 没找到记录的返回报错信息
-		/*if common.DB.Where(&fionaUserCenter.Role{Id: id}).First(&role).RecordNotFound() {
-			apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.RoleNotFoundMsg)
+		//record does not exist
+		if 0 == roleInfo.Id {
+			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.RoleNotFoundMsg)
 			return
-		}*/
+		}
 
 		apis.FormatResponse(c, common.SuccessCode, "", &params.Item{
 			Id:        roleInfo.Id,
@@ -63,32 +68,32 @@ func Show(router *gin.RouterGroup, conf *context.Config) {
 	})
 }
 
-
 func List(router *gin.RouterGroup, conf *context.Config) {
-	router.GET("/role/list", func(c *gin.Context) {
-		role := user_center.NewRole(conf.Db())
+	router.GET("/list", func(c *gin.Context) {
+		role := user_center.NewRole(conf.Db(), conf.Debug())
 		result := role.List()
 		apis.FormatResponse(c, common.SuccessCode, "", result)
 	})
 }
 
 func Update(router *gin.RouterGroup, conf *context.Config) {
-	router.POST("/role/update/:id", func(c *gin.Context) {
+	router.POST("/update/:id", func(c *gin.Context) {
 		var param params.RoleParams
 		idString := c.Param("id")
 		id, _ := strconv.Atoi(idString)
 		err := c.BindJSON(&param)
-		role := user_center.NewRole(conf.Db())
+		role := user_center.NewRole(conf.Db(), conf.Debug())
 
 		if err == nil {
 			roleInfo := role.Show(id)
-			//todo 判断更新的id记录是否存在
-			/*if common.DB.Model(fionaUserCenter.Role{}).Where("id=?", id).First(&role).RecordNotFound() {
-				apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.RoleNotFoundMsg)
-			}*/
+			//updating role does not exit
+			if 0 == roleInfo.Id {
+				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.RoleNotFoundMsg)
+				return
+			}
+
 			name := param.Name
 
-			//目前只有这一个参数
 			if name == "" {
 				apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.NothingToUpdate)
 				return
@@ -96,11 +101,12 @@ func Update(router *gin.RouterGroup, conf *context.Config) {
 				roleInfo.Name = param.Name
 				roleInfo.UpdatedAt = time.Now()
 			}
-			/*else if !common.DB.Find(&tmpRole, " name = ? AND id <> ?", name, id).RecordNotFound() {
-			    todo 判断更新的名字是否与其他的已存在的记录名字重复
-				apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.NameUniqueMsg)
+
+			//check duplicate name
+			if 0 != role.UpdateShowByName(name, id).Id {
+				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.NameUniqueMsg)
 				return
-			}*/
+			}
 
 			updateErr := role.Update(roleInfo)
 			if updateErr == nil {
@@ -115,17 +121,17 @@ func Update(router *gin.RouterGroup, conf *context.Config) {
 }
 
 func DeleteRole(router *gin.RouterGroup, conf *context.Config) {
-	router.POST("/role/delete/:id", func(c *gin.Context) {
-		role := user_center.NewRole(conf.Db())
+	router.POST("/delete/:id", func(c *gin.Context) {
+		role := user_center.NewRole(conf.Db(), conf.Debug())
 		stringId := c.Param("id")
 		id, _ := strconv.Atoi(stringId)
 		roleInfo := role.Show(id)
 
-		//todo 判断要删除的id记录是否存在
-		/*if common.DB.Model(fionaUserCenter.Role{}).Where("id=?", id).First(&role).RecordNotFound() {
-			apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.RoleNotFoundMsg)
+		//record not found
+		if 0 == roleInfo.Id {
+			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.RoleNotFoundMsg)
 			return
-		}*/
+		}
 
 		delError := role.Delete(roleInfo)
 		if delError == nil {

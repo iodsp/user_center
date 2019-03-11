@@ -18,11 +18,13 @@ type Role struct {
 }
 
 //returns a new Role type with a given path and db instance
-func NewRole(db *gorm.DB) *Role {
+func NewRole(db *gorm.DB, isDebug bool) *Role {
+	if true == isDebug{
+		db.LogMode(true)
+	}
 	instance := &Role{
 		db: db,
 	}
-
 	return instance
 }
 
@@ -42,8 +44,14 @@ func (r *Role) Store(params params.RoleParams) error {
 }
 
 //find a role by name
-func (r *Role) ShowByName(id int) (role fionaUserCenter.Role){
-	r.db.Where(&fionaUserCenter.Role{Id: id}).First(&role)
+func (r *Role) ShowByName(name string) (role fionaUserCenter.Role){
+	r.db.Where(&fionaUserCenter.Role{Name: name}).First(&role)
+	return role
+}
+
+//find a role by name not id
+func (r *Role) UpdateShowByName(name string, id int) (role fionaUserCenter.Role){
+	r.db.Where(&fionaUserCenter.Role{Name: name}).Not("id", id).First(&role)
 	return role
 }
 
@@ -55,7 +63,7 @@ func (r *Role) Show(id int) (role fionaUserCenter.Role){
 
 //role list
 func (r *Role) List() (roles []fionaUserCenter.Role){
-	r.db.Model(&fionaUserCenter.Role{}).Find(&roles)
+	r.db.Model(&fionaUserCenter.Role{}).Order("id desc").Find(&roles)
 	return roles
 }
 

@@ -1,7 +1,8 @@
-package user_center
+package service
 
 import (
-	"github.com/iodsp/user_center/models/fionaUserCenter"
+	"github.com/iodsp/user_center/context"
+	"github.com/iodsp/user_center/models/iodsp"
 	"github.com/iodsp/user_center/params"
 	"github.com/jinzhu/gorm"
 	"time"
@@ -14,8 +15,9 @@ type Domain struct {
 }
 
 //returns a new domain type with a given path and db instance
-func NewDomain(db *gorm.DB, isDebug bool) *Domain {
-	if isDebug {
+func NewDomain(conf *context.Config) *Domain {
+	db := conf.Db()
+	if conf.Debug() {
 		db.LogMode(true)
 	}
 	instance := &Domain{
@@ -29,7 +31,7 @@ func (r *Domain) StoreDomain(params params.DomainParams) error {
 	domainDb := r.db.NewScope(nil).DB()
 	createTime := time.Now()
 	updateTime := time.Now()
-	insertErr := domainDb.Create(&fionaUserCenter.Domain{
+	insertErr := domainDb.Create(&iodsp.Domain{
 		Name:      params.Name,
 		Type:      params.Type,
 		CreatedAt: createTime,
@@ -39,37 +41,37 @@ func (r *Domain) StoreDomain(params params.DomainParams) error {
 }
 
 //find a Domain by name
-func (r *Domain) ShowDomainByName(name string) (Domain fionaUserCenter.Domain){
-	r.db.Where(&fionaUserCenter.Domain{Name: name}).First(&Domain)
+func (r *Domain) ShowDomainByName(name string) (Domain iodsp.Domain){
+	r.db.Where(&iodsp.Domain{Name: name}).First(&Domain)
 	return Domain
 }
 
 //find a Domain by name not id
-func (r *Domain) ShowDomainByNameNotId(name string, id int) (Domain fionaUserCenter.Domain){
-	r.db.Where(&fionaUserCenter.Domain{Name: name}).Not("id", id).First(&Domain)
+func (r *Domain) ShowDomainByNameNotId(name string, id int) (Domain iodsp.Domain){
+	r.db.Where(&iodsp.Domain{Name: name}).Not("id", id).First(&Domain)
 	return Domain
 }
 
 //find a Domain by id
-func (r *Domain) ShowDomain(id int) (Domain fionaUserCenter.Domain){
-	r.db.Where(&fionaUserCenter.Domain{Id: id}).First(&Domain)
+func (r *Domain) ShowDomain(id int) (Domain iodsp.Domain){
+	r.db.Where(&iodsp.Domain{Id: id}).First(&Domain)
 	return Domain
 }
 
 //Domain list
-func (r *Domain) DomainList() (Domains []fionaUserCenter.Domain){
-	r.db.Model(&fionaUserCenter.Domain{}).Order("id desc").Find(&Domains)
+func (r *Domain) DomainList() (Domains []iodsp.Domain){
+	r.db.Model(&iodsp.Domain{}).Order("id desc").Find(&Domains)
 	return Domains
 }
 
 //update Domain
-func (r *Domain) UpdateDomain(Domain fionaUserCenter.Domain) error {
+func (r *Domain) UpdateDomain(Domain iodsp.Domain) error {
 	updateErr := r.db.Save(Domain).Error
 	return updateErr
 }
 
 //delete Domain
-func (r *Domain) DeleteDomain(Domain fionaUserCenter.Domain) error {
+func (r *Domain) DeleteDomain(Domain iodsp.Domain) error {
 	deleteError := r.db.Delete(&Domain).Error
 	return deleteError
 }

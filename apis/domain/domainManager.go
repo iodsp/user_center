@@ -6,7 +6,7 @@ import (
 	"github.com/iodsp/user_center/common"
 	"github.com/iodsp/user_center/context"
 	"github.com/iodsp/user_center/params"
-	"github.com/iodsp/user_center/user_center"
+	"github.com/iodsp/user_center/service"
 	"strconv"
 	"time"
 )
@@ -18,7 +18,7 @@ func Store(router *gin.RouterGroup, conf *context.Config) {
 		err := c.BindJSON(&param)
 		name := param.Name
 		domainType := param.Type
-		domainService := user_center.NewDomain(conf.Db(), conf.Debug())
+		domainService := service.NewDomain(conf)
 
 		if err == nil {
 			if name == "" {
@@ -54,7 +54,7 @@ func Show(router *gin.RouterGroup, conf *context.Config) {
 	router.GET("/show/:id", func(c *gin.Context) {
 		stringId := c.Param("id")
 		id, _ := strconv.Atoi(stringId)
-		domainService := user_center.NewDomain(conf.Db(), conf.Debug())
+		domainService := service.NewDomain(conf)
 
 		//record not found
 		domainInfo := domainService.ShowDomain(id)
@@ -76,7 +76,7 @@ func Show(router *gin.RouterGroup, conf *context.Config) {
 
 func List(router *gin.RouterGroup, conf *context.Config) {
 	router.GET("/list", func(c *gin.Context) {
-		domainService := user_center.NewDomain(conf.Db(), conf.Debug())
+		domainService := service.NewDomain(conf)
 		domain := domainService.DomainList()
 		apis.FormatResponse(c, common.SuccessCode, "", domain)
 	})
@@ -90,7 +90,7 @@ func Update(router *gin.RouterGroup, conf *context.Config) {
 		id, _ := strconv.Atoi(idString)
 		name := param.Name
 		domainType := param.Type
-		domainService := user_center.NewDomain(conf.Db(), conf.Debug())
+		domainService := service.NewDomain(conf)
 
 		if err == nil {
 			domain := domainService.ShowDomain(id)
@@ -142,7 +142,7 @@ func DeleteDomain(router *gin.RouterGroup, conf *context.Config) {
 	router.POST("/delete/:id", func(c *gin.Context) {
 		idString := c.Param("id")
 		id, _ := strconv.Atoi(idString)
-		domainService := user_center.NewDomain(conf.Db(), conf.Debug())
+		domainService := service.NewDomain(conf)
 
 		//record not found
 		domain := domainService.ShowDomain(id)

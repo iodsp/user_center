@@ -24,7 +24,7 @@ var GlobalFlags = []cli.Flag{
 	cli.StringFlag{
 		Name:   "database-dsn",
 		Usage:  "database data source name (`DSN`)",
-		Value:  "root:root@tcp(192.168.33.11:3306)/FionaUserCenter?parseTime=true&charset=utf8",
+		Value:  "root:root@tcp(192.168.33.11:3306)/iodsp?parseTime=true&charset=utf8",
 		EnvVar: "USER_CENTER_DATABASE_DSN",
 	},
 	cli.IntFlag{

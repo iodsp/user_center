@@ -6,7 +6,7 @@ import (
 	"github.com/iodsp/user_center/common"
 	"github.com/iodsp/user_center/context"
 	"github.com/iodsp/user_center/params"
-	"github.com/iodsp/user_center/user_center"
+	"github.com/iodsp/user_center/service"
 	"strconv"
 	"time"
 )
@@ -16,7 +16,7 @@ func Store(router *gin.RouterGroup, conf *context.Config) {
 		var param params.RoleParams
 		err := c.BindJSON(&param)
 		name := param.Name
-		role := user_center.NewRole(conf.Db(), conf.Debug())
+		role := service.NewRole(conf)
 
 		if err == nil {
 			if name == "" {
@@ -49,7 +49,7 @@ func Show(router *gin.RouterGroup, conf *context.Config) {
 	router.GET("/show/:id", func(c *gin.Context) {
 		stringId := c.Param("id")
 		id, _ := strconv.Atoi(stringId)
-		role := user_center.NewRole(conf.Db(), conf.Debug())
+		role := service.NewRole(conf)
 
 		roleInfo := role.Show(id)
 
@@ -70,7 +70,7 @@ func Show(router *gin.RouterGroup, conf *context.Config) {
 
 func List(router *gin.RouterGroup, conf *context.Config) {
 	router.GET("/list", func(c *gin.Context) {
-		role := user_center.NewRole(conf.Db(), conf.Debug())
+		role := service.NewRole(conf)
 		result := role.List()
 		apis.FormatResponse(c, common.SuccessCode, "", result)
 	})
@@ -82,7 +82,7 @@ func Update(router *gin.RouterGroup, conf *context.Config) {
 		idString := c.Param("id")
 		id, _ := strconv.Atoi(idString)
 		err := c.BindJSON(&param)
-		role := user_center.NewRole(conf.Db(), conf.Debug())
+		role := service.NewRole(conf)
 
 		if err == nil {
 			roleInfo := role.Show(id)
@@ -122,7 +122,7 @@ func Update(router *gin.RouterGroup, conf *context.Config) {
 
 func DeleteRole(router *gin.RouterGroup, conf *context.Config) {
 	router.POST("/delete/:id", func(c *gin.Context) {
-		role := user_center.NewRole(conf.Db(), conf.Debug())
+		role := service.NewRole(conf)
 		stringId := c.Param("id")
 		id, _ := strconv.Atoi(stringId)
 		roleInfo := role.Show(id)

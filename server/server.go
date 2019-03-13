@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/iodsp/user_center/context"
+	"github.com/iodsp/user_center/my_log"
+	"io"
 )
 
 // Start the REST API server using the configuration provided
@@ -14,6 +16,8 @@ func Start(conf *context.Config) {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
+	logFile := my_log.LogFilePath()
+	gin.DefaultWriter = io.MultiWriter(logFile)
 	app := gin.Default()
 
 	registerRoutes(app, conf)

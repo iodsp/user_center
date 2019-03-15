@@ -1,28 +1,41 @@
 package common
 
 //产品线相关的消息
-const StoreDomainSuccess = "添加产品线成功"
-const StoreDomainFailure = "添加产品线失败"
+const StoreDomainSuccess = "Add a new domain successfully!"
+const StoreDomainFailure = "Fail to add add a new domain. Please try it again later!"
 
-//角色相关
-const RoleNotFoundMsg = "该角色不存在"
+//role related
+const RoleNotFoundMsg = "The role does not exist!"
+const IdEmpty = "Id is empty!"
 
-//参数相关
-const ParseParamErrorMsg = "参数解析错误"
-const DomainNotFoundMsg = "产品线不存在"
-const DomainTypeErrorMsg = "产品线类型错误"
-const NameUniqueMsg = "名称已存在"
-const NameEmptyMsg = "名称不可为空"
+//user related
+const UserNotFoundMsg = "The user does not exist!"
 
-//更新相关
-const NothingToUpdate = "没有可更新的内容"
-const UpdateSuccessMsg = "更新成功"
-const UpdateFailureMsg = "更新失败"
+//param related
+const ParseParamErrorMsg = "Parse param error"
+//const ParamErrorMsg = "Param Error"
+const DomainNotFoundMsg = "The domain does not exist!"
+const DomainTypeErrorMsg = "Domain type error产品线类型错误"
+const NameUniqueMsg = "Duplicated name"
+const NameEmptyMsg = "Name is empty"
+const PhoneEmptyMsg = "Phone is empty"
+//const TypeEmptyMsg = "Type is empty"
+const DomainIdEmptyMsg = "DomainId is empty"
+const PhoneUniqueMsg = "Duplicated phone number"
+const RegisterPlatformErrMsg = "Register platform type must be 1 or 2"
+const PhonePatternErrMsg = "User phone number is in wrong pattern"
+const UserTypeErrMsg = "User Type must be 1 or 2"
+const PasswordEmptyMsg = "Password is empty"
 
-//保存相关
-const SaveSuccessMsg = "保存成功"
-const SaveFailureMsg = "保存失败"
+//update related
+const NothingToUpdate = "Nothing to update!"
+const UpdateSuccessMsg = "Update it successfully!"
+const UpdateFailureMsg = "Fail to update it. Please try it again later!"
 
-//删除相关
-const DeleteSuccessMsg = "删除成功"
-const DeleteFailureMsg = "删除失败"
+//save related
+const SaveSuccessMsg = "Save it successfully!"
+const SaveFailureMsg = "Fail to save it. Please try it again later!"
+
+//delete related
+const DeleteSuccessMsg = "Delete it successfully!"
+const DeleteFailureMsg = "Fail to delete it. Please try it again later!"

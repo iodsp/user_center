@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/iodsp/user_center/apis/domain"
 	"github.com/iodsp/user_center/apis/role"
+	"github.com/iodsp/user_center/apis/user"
 	"github.com/iodsp/user_center/context"
 )
 
@@ -24,5 +25,13 @@ func registerRoutes(app *gin.Engine, conf *context.Config) {
 		domain.List(domainPrefix, conf)
 		domain.Update(domainPrefix, conf)
 		domain.DeleteDomain(domainPrefix, conf)
+	}
+	userPrefix := app.Group("/user")
+	{
+		user.Store(userPrefix, conf)
+		user.Show(userPrefix, conf)
+		user.List(userPrefix, conf)
+		user.UpdateUser(userPrefix, conf)
+		user.DeleteUser(userPrefix, conf)
 	}
 }

@@ -8,11 +8,6 @@ import (
 	"time"
 )
 
-type Params struct {
-	Id   int    `json:"primary_key"`
-	Name string `json:"name" binding:"required"`
-}
-
 //given an originals path and a db instance.
 type Role struct {
 	db *gorm.DB

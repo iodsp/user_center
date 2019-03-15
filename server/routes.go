@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/iodsp/user_center/apis/domain"
+	"github.com/iodsp/user_center/apis/resource"
 	"github.com/iodsp/user_center/apis/role"
 	"github.com/iodsp/user_center/apis/user"
 	"github.com/iodsp/user_center/context"
@@ -33,5 +34,13 @@ func registerRoutes(app *gin.Engine, conf *context.Config) {
 		user.List(userPrefix, conf)
 		user.UpdateUser(userPrefix, conf)
 		user.DeleteUser(userPrefix, conf)
+	}
+	resourcePrefix := app.Group("/resource")
+	{
+		resource.Store(resourcePrefix, conf)
+		resource.Show(resourcePrefix, conf)
+		resource.List(resourcePrefix, conf)
+		resource.Update(resourcePrefix, conf)
+		resource.DeleteResource(resourcePrefix, conf)
 	}
 }

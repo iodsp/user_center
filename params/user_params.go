@@ -6,7 +6,7 @@ import (
 
 //user input param
 type UserParams struct {
-	Id               int         `json:"Id"`
+	Id               int         `json:"id"`
 	Name             string      `json:"name" binding:"required"`
 	Password         string      `json:"password" binding:"required"`
 	Phone            string      `json:"phone" binding:"required"`
@@ -22,7 +22,7 @@ type UserParams struct {
 
 //user update param
 type UserUpdateParams struct {
-	Id               int         `json:"Id"`
+	Id               int         `json:"id"`
 	Name             string      `json:"name"`
 	Password         string      `json:"password"`
 	Phone            string      `json:"phone"`

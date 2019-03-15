@@ -26,6 +26,8 @@ const RegisterPlatformErrMsg = "Register platform type must be 1 or 2"
 const PhonePatternErrMsg = "User phone number is in wrong pattern"
 const UserTypeErrMsg = "User Type must be 1 or 2"
 const PasswordEmptyMsg = "Password is empty"
+const RecordNotFoundMsg = "Record is not found"
+const UrlEmptyMsg = "Url is empty"
 
 //update related
 const NothingToUpdate = "Nothing to update!"

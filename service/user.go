@@ -58,6 +58,12 @@ func (r *User) ShowByPhone(phone string) (User iodsp.User){
 	return User
 }
 
+//find a User by phone not id
+func (r *User) UpdateShowByPhone(phone string, id int) (User iodsp.User){
+	r.db.Where(&iodsp.User{Phone: phone}).Not("id", id).First(&User)
+	return User
+}
+
 //find a User by name not id
 func (r *User) UpdateShowByName(name string, id int) (User iodsp.User){
 	r.db.Where(&iodsp.User{Name: name}).Not("id", id).First(&User)

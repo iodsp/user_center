@@ -251,7 +251,7 @@ func UpdateUser(router *gin.RouterGroup, conf *context.Config) {
 
 			if name != "" {
 				//check duplicate name
-				userInfo1 := userService.ShowByName(name)
+				userInfo1 := userService.UpdateShowByName(name, id)
 				if 0 != userInfo1.Id {
 					myLogger.Info(common.UpdateUserMsg + common.NameUniqueMsg)
 					apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.NameUniqueMsg)
@@ -266,7 +266,7 @@ func UpdateUser(router *gin.RouterGroup, conf *context.Config) {
 			}
 
 			if phone != "" {
-				userInfoByPhone := userService.ShowByPhone(phone)
+				userInfoByPhone := userService.UpdateShowByPhone(phone, id)
 				if 0 != userInfoByPhone.Id {
 					myLogger.Info(common.UpdateUserMsg + common.PhoneUniqueMsg)
 					apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.PhoneUniqueMsg)

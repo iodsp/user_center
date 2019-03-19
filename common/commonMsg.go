@@ -10,6 +10,8 @@ const IdEmpty = "Id is empty!"
 
 //user related
 const UserNotFoundMsg = "The user does not exist!"
+const UserIdEmpty = "UserId is Empty!"
+const RoleIdEmpty = "RoleId is Empty!"
 
 //param related
 const ParseParamErrorMsg = "Parse param error"
@@ -41,3 +43,15 @@ const SaveFailureMsg = "Fail to save it. Please try it again later!"
 //delete related
 const DeleteSuccessMsg = "Delete it successfully!"
 const DeleteFailureMsg = "Fail to delete it. Please try it again later!"
+
+//grant
+const GrantSuccessfullyMsg = "Grant Successfully!"
+const GrantFailMsg = "Fail to Grant!"
+const UserNotRole = "THe user does not have this role!"
+const RoleNotResource = "The role does not have the resource!"
+const UserHasResource = "The user can call this resource!"
+const UserNotResource = "The user can not call this resource!"
+
+//resource
+const ResourceIdEmpty = "ResourceId is Empty!"
+const ResourceUrlEmpty = "Resource url is Empty!"

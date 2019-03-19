@@ -157,6 +157,12 @@ func DeleteResource(router *gin.RouterGroup, conf *context.Config) {
 		Resource := service.NewResource(conf)
 		stringId := c.Param("id")
 		id, _ := strconv.Atoi(stringId)
+
+		if id == 0 {
+			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.RecordNotFoundMsg)
+			return
+		}
+
 		ResourceInfo := Resource.Show(id)
 
 		//record not found

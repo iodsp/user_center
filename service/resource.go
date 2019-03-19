@@ -50,6 +50,12 @@ func (r *Resource) Show(id int) (Resource iodsp.Resource) {
 	return Resource
 }
 
+//find a Resource by url
+func (r *Resource) ShowByUrl(url string)(Resource iodsp.Resource) {
+	r.db.Where(&iodsp.Resource{Url: url}).First(&Resource)
+	return Resource
+}
+
 //Resource list
 func (r *Resource) List() (Resources []iodsp.Resource) {
 	r.db.Model(&iodsp.Resource{}).Order("id desc").Find(&Resources)

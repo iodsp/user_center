@@ -84,7 +84,7 @@ func (r *User) List() (Users []iodsp.User){
 
 //update User
 func (r *User) Update(User iodsp.User) error {
-	updateErr := r.db.Save(User).Error
+	updateErr := r.db.Save(&User).Error
 	return updateErr
 }
 

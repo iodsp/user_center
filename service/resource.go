@@ -45,31 +45,49 @@ func (r *Resource) StoreResource(params params.ResourceParams) error {
 }
 
 //find a Resource by id
-func (r *Resource) Show(id int) (Resource iodsp.Resource) {
-	r.db.Where(&iodsp.Resource{Id: id}).First(&Resource)
-	return Resource
+func (r *Resource) Show(id int) (resource iodsp.Resource) {
+	r.db.Where(&iodsp.Resource{Id: id}).First(&resource)
+	return resource
 }
 
 //find a Resource by url
-func (r *Resource) ShowByUrl(url string)(Resource iodsp.Resource) {
-	r.db.Where(&iodsp.Resource{Url: url}).First(&Resource)
-	return Resource
+func (r *Resource) ShowByUrl(url string)(resource iodsp.Resource) {
+	r.db.Where(&iodsp.Resource{Url: url}).First(&resource)
+	return resource
+}
+
+//find a Resource by name
+func (r *Resource) ShowByName(name string)(resource iodsp.Resource) {
+	r.db.Where(&iodsp.Resource{Name: name}).First(&resource)
+	return resource
 }
 
 //Resource list
-func (r *Resource) List() (Resources []iodsp.Resource) {
-	r.db.Model(&iodsp.Resource{}).Order("id desc").Find(&Resources)
-	return Resources
+func (r *Resource) List() (resources []iodsp.Resource) {
+	r.db.Model(&iodsp.Resource{}).Order("id desc").Find(&resources)
+	return resources
 }
 
 //update Resource
-func (r *Resource) Update(Resource iodsp.Resource) error {
-	updateErr := r.db.Save(Resource).Error
+func (r *Resource) Update(resource iodsp.Resource) error {
+	updateErr := r.db.Save(&resource).Error
 	return updateErr
 }
 
 //delete Resource
-func (r *Resource) Delete(Resource iodsp.Resource) error {
-	deleteError := r.db.Delete(&Resource).Error
+func (r *Resource) Delete(resource iodsp.Resource) error {
+	deleteError := r.db.Delete(&resource).Error
 	return deleteError
+}
+
+//find a Resource by url not id
+func (r *Resource) ShowResourceByUrlNotId(url string, id int) (resource iodsp.Resource){
+	r.db.Where(&iodsp.Resource{Url: url}).Not("id", id).First(&resource)
+	return resource
+}
+
+//find a Resource by name not id
+func (r *Resource) ShowResourceByNameNotId(name string, id int) (resource iodsp.Resource){
+	r.db.Where(&iodsp.Resource{Name: name}).Not("id", id).First(&resource)
+	return resource
 }

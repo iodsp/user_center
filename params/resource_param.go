@@ -6,7 +6,7 @@ import "time"
 type ResourceParams struct {
 	Id         int    `json:"Id"`
 	DomainId   int    `json:"domainId" binding:"required"`
-	DomainName string `json:"domainName" binding:"required"`
+	DomainName string `json:"domainName"`
 	Name       string `json:"name" binding:"required"`
 	Url        string `json:"url" binding:"required"`
 	Desc       string `json:"desc"`

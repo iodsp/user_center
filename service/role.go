@@ -66,7 +66,7 @@ func (r *Role) List() (roles []iodsp.Role){
 
 //update role
 func (r *Role) Update(role iodsp.Role) error {
-	updateErr := r.db.Save(role).Error
+	updateErr := r.db.Save(&role).Error
 	return updateErr
 }
 
@@ -75,5 +75,3 @@ func (r *Role) Delete(role iodsp.Role) error {
 	deleteError := r.db.Delete(&role).Error
 	return deleteError
 }
-
-

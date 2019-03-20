@@ -10,6 +10,7 @@ import (
 	"github.com/iodsp/user_center/params"
 	"github.com/iodsp/user_center/service"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -17,35 +18,59 @@ func Store(router *gin.RouterGroup, conf *context.Config) {
 	router.POST("/store", func(c *gin.Context) {
 		var param params.ResourceParams
 		err := c.BindJSON(&param)
-		name := param.Name
+		param.Url = strings.Trim(param.Url, " ")
+		name := strings.Trim(param.Name, " ")
+		param.Url = strings.Trim(param.Url, " ")
+		param.Desc = strings.Trim(param.Desc, " ")
 		resource := service.NewResource(conf)
 		domainService := service.NewDomain(conf)
 		myLogger := my_log.NewLog(conf).Logger
-		data, err := json.Marshal(param)
-		if err != nil {
-			myLogger.Info("Json marshaling failed：%s", err)
+
+		data, err1 := json.Marshal(param)
+		if err1 != nil {
+			myLogger.Info("Json marshaling failed：%s", err1)
 		}
 		myLogger.Info("params: " + string(data))
 
-		if name == "" {
-			myLogger.Info(common.NameEmptyMsg)
-			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.NameEmptyMsg)
-			return
-		}
-
-		if param.DomainId == 0 {
-			myLogger.Info(common.DomainIdEmptyMsg)
-			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.DomainIdEmptyMsg)
-			return
-		}
-
-		if param.Url == "" {
-			myLogger.Info(common.UrlEmptyMsg)
-			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.UrlEmptyMsg)
-			return
-		}
-
 		if err == nil {
+			if name == "" {
+				myLogger.Info(common.NameEmptyMsg)
+				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.NameEmptyMsg)
+				return
+			}
+
+			if param.DomainId == 0 {
+				myLogger.Info(common.DomainIdEmptyMsg)
+				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.DomainIdEmptyMsg)
+				return
+			}
+
+			if param.Url == "" {
+				myLogger.Info(common.UrlEmptyMsg)
+				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.UrlEmptyMsg)
+				return
+			}
+
+			resourceByUrl := resource.ShowByUrl(param.Url)
+			if resourceByUrl.Id != 0 {
+				myLogger.Info(common.DuplicatedUrlMsg)
+				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.DuplicatedUrlMsg)
+				return
+			}
+
+			resourceByName := resource.ShowByName(param.Name)
+			if resourceByName.Id != 0 {
+				myLogger.Info(common.NameUniqueMsg)
+				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.NameUniqueMsg)
+				return
+			}
+
+			if resourceByUrl.Id != 0 {
+				myLogger.Info(common.DuplicatedUrlMsg)
+				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.DuplicatedUrlMsg)
+				return
+			}
+
 			domainInfo := domainService.ShowDomain(param.DomainId)
 			if domainInfo.Id == 0 {
 				myLogger.Info(common.DomainNotFoundMsg)
@@ -77,6 +102,8 @@ func Show(router *gin.RouterGroup, conf *context.Config) {
 		id, _ := strconv.Atoi(stringId)
 		resource := service.NewResource(conf)
 		myLogger := my_log.NewLog(conf).Logger
+
+		myLogger.Info("Resource info id: " + stringId)
 
 		resourceInfo := resource.Show(id)
 
@@ -116,37 +143,88 @@ func Update(router *gin.RouterGroup, conf *context.Config) {
 		err := c.BindJSON(&param)
 		resource := service.NewResource(conf)
 		myLogger := my_log.NewLog(conf).Logger
+		domainService := service.NewDomain(conf)
 
-		if param.DomainId == 0 && param.Name == "" && param.Url == "" && param.Desc == "" {
-			myLogger.Info(common.NothingToUpdate)
-			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.NothingToUpdate)
-			return
+		data, err1 := json.Marshal(param)
+		if err1 != nil {
+			myLogger.Info("Json marshaling failed：%s", err1)
 		}
+		myLogger.Info("params: " + string(data))
+
+		myLogger.Info("User update id: " + idString)
 
 		if err == nil {
-			ResourceInfo := resource.Show(id)
+			if param.DomainId == 0 && param.Name == "" && param.Url == "" && param.Desc == "" {
+				myLogger.Info(common.NothingToUpdate)
+				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.NothingToUpdate)
+				return
+			}
+
+			resourceInfo := resource.Show(id)
 			//updating Resource does not exit
-			if 0 == ResourceInfo.Id {
+			if 0 == resourceInfo.Id {
+				myLogger.Info(common.RecordNotFoundMsg)
 				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.RecordNotFoundMsg)
 				return
 			}
-			name := param.Name
 
-			if name == "" {
-				apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.NothingToUpdate)
-				return
-			} else {
-				ResourceInfo.Name = param.Name
-				ResourceInfo.UpdatedAt = time.Now()
+			name := strings.Trim(param.Name, " ")
+			if name != "" {
+				resourceByNameNotId := resource.ShowResourceByNameNotId(name, id)
+				if resourceByNameNotId.Id != 0 {
+					myLogger.Info(common.NameUniqueMsg)
+					apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.NameUniqueMsg)
+					return
+
+				}
+				resourceInfo.Name = param.Name
 			}
 
-			updateErr := resource.Update(ResourceInfo)
+			if param.DomainId != 0 {
+				domainInfo := domainService.ShowDomain(param.DomainId)
+				if domainInfo.Id == 0 {
+					myLogger.Info(common.DomainNotFoundMsg)
+					apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.DomainNotFoundMsg)
+					return
+				}
+				resourceInfo.DomainId = param.DomainId
+				resourceInfo.DomainName = domainInfo.Name
+			}
+
+			param.Url = strings.Trim(param.Url, " ")
+			if param.Url != "" {
+				resourceByUrlNotId := resource.ShowResourceByUrlNotId(param.Url, id)
+				if resourceByUrlNotId.Id != 0 {
+					myLogger.Info(common.DuplicatedUrlMsg)
+					apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.DuplicatedUrlMsg)
+					return
+				}
+				resourceInfo.Url = param.Url
+			}
+
+			param.Desc = strings.Trim(param.Desc, " ")
+			if param.Desc != "" {
+				resourceInfo.Desc = param.Desc
+			}
+
+			resourceInfo.UpdatedAt = time.Now()
+
+			data1, err2 := json.Marshal(resourceInfo)
+			if err2 != nil {
+				myLogger.Info("Json marshaling failed：%s", err2)
+			}
+			myLogger.Info("update params: " + string(data1))
+
+			updateErr := resource.Update(resourceInfo)
 			if updateErr == nil {
+				myLogger.Info(common.UpdateSuccessMsg)
 				apis.FormatResponseWithoutData(c, common.SuccessCode, common.UpdateSuccessMsg)
 			} else {
+				myLogger.Error(common.UpdateSuccessMsg)
 				apis.FormatResponseWithoutData(c, common.FailureCode, common.UpdateSuccessMsg)
 			}
 		} else {
+			myLogger.Error(common.ParseParamErrorMsg)
 			apis.FormatResponseWithoutData(c, common.ParseParamErrorCode, common.ParseParamErrorMsg)
 		}
 	})
@@ -157,8 +235,12 @@ func DeleteResource(router *gin.RouterGroup, conf *context.Config) {
 		Resource := service.NewResource(conf)
 		stringId := c.Param("id")
 		id, _ := strconv.Atoi(stringId)
+		myLogger := my_log.NewLog(conf).Logger
+
+		myLogger.Info("Delete resource id: " + stringId)
 
 		if id == 0 {
+			myLogger.Info(common.RecordNotFoundMsg)
 			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.RecordNotFoundMsg)
 			return
 		}
@@ -167,14 +249,17 @@ func DeleteResource(router *gin.RouterGroup, conf *context.Config) {
 
 		//record not found
 		if 0 == ResourceInfo.Id {
+			myLogger.Info(common.RecordNotFoundMsg)
 			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.RecordNotFoundMsg)
 			return
 		}
 
 		delError := Resource.Delete(ResourceInfo)
 		if delError == nil {
+			myLogger.Info(common.DeleteSuccessMsg)
 			apis.FormatResponseWithoutData(c, common.SuccessCode, common.DeleteSuccessMsg)
 		} else {
+			myLogger.Error(common.DeleteFailureMsg)
 			apis.FormatResponseWithoutData(c, common.FailureCode, common.DeleteFailureMsg)
 		}
 	})

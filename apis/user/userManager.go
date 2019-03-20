@@ -35,31 +35,12 @@ func Store(router *gin.RouterGroup, conf *context.Config) {
 		}
 		myLogger.Info("params: " + string(data))
 
-		if name == "" {
-			myLogger.Info(common.AddUserMsg + common.NameEmptyMsg)
-			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.NameEmptyMsg)
-			return
-		}
-
-		if param.Phone == "" {
-			myLogger.Info(common.AddUserMsg + common.PhoneEmptyMsg)
-			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.PhoneEmptyMsg)
-			return
-		}
-
-		if param.DomainId == 0 {
-			myLogger.Info(common.AddUserMsg + common.DomainIdEmptyMsg)
-			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.DomainIdEmptyMsg)
-			return
-		}
-
-		if password == "" {
-			myLogger.Info(common.AddUserMsg + common.PasswordEmptyMsg)
-			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.PasswordEmptyMsg)
-			return
-		}
-
 		if err == nil {
+			if name == "" {
+				myLogger.Info(common.AddUserMsg + common.NameEmptyMsg)
+				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.NameEmptyMsg)
+				return
+			}
 			//check duplicate name
 			userInfo := userService.ShowByName(name)
 			if 0 != userInfo.Id {
@@ -68,21 +49,37 @@ func Store(router *gin.RouterGroup, conf *context.Config) {
 				return
 			}
 
-			//base64 encode password
-			param.Password = coder.EncodeToString([]byte(password))
-
+			if param.Phone == "" {
+				myLogger.Info(common.AddUserMsg + common.PhoneEmptyMsg)
+				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.PhoneEmptyMsg)
+				return
+			}
 			userInfoByPhone := userService.ShowByPhone(phone)
 			if 0 != userInfoByPhone.Id {
 				myLogger.Info(common.AddUserMsg + common.PhoneUniqueMsg)
 				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.PhoneUniqueMsg)
 				return
 			}
-
 			if !isPhoneValidated(phone) {
 				myLogger.Info(common.AddUserMsg + common.PhonePatternErrMsg)
 				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.PhonePatternErrMsg)
 				return
 			}
+
+			if param.DomainId == 0 {
+				myLogger.Info(common.AddUserMsg + common.DomainIdEmptyMsg)
+				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.DomainIdEmptyMsg)
+				return
+			}
+
+			if password == "" {
+				myLogger.Info(common.AddUserMsg + common.PasswordEmptyMsg)
+				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.PasswordEmptyMsg)
+				return
+			}
+
+			//base64 encode password
+			param.Password = coder.EncodeToString([]byte(password))
 
 			if param.RegisterPlatform == 0 {
 				param.RegisterPlatform = common.DefaultRegisterPlatform
@@ -110,11 +107,11 @@ func Store(router *gin.RouterGroup, conf *context.Config) {
 			userInfo.UpdatedAt = time.Now()
 
 			//log insert param
-			data1, err := json.Marshal(param)
-			if err != nil {
-				myLogger.Info("Json marshaling failed：%s", err)
+			data2, err2 := json.Marshal(param)
+			if err2 != nil {
+				myLogger.Info("Json marshaling failed：%s", err2)
 			}
-			myLogger.Info(common.AddUserMsg + "insert params" + string(data1))
+			myLogger.Info(common.AddUserMsg + "insert params" + string(data2))
 
 			//insert a new record
 			insertErr := userService.StoreUser(param)
@@ -145,6 +142,8 @@ func Show(router *gin.RouterGroup, conf *context.Config) {
 		id, _ := strconv.Atoi(stringId)
 		userService := service.NewUser(conf)
 		myLogger := my_log.NewLog(conf).Logger
+
+		myLogger.Info("User info id: " + stringId)
 
 		userInfo := userService.Show(id)
 
@@ -185,6 +184,8 @@ func DeleteUser(router *gin.RouterGroup, conf *context.Config) {
 		userInfo := user.Show(id)
 		myLogger := my_log.NewLog(conf).Logger
 
+		myLogger.Info("Delete user id: " + stringId)
+
 		//record not found
 		if 0 == userInfo.Id {
 			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.UserNotFoundMsg)
@@ -222,14 +223,14 @@ func UpdateUser(router *gin.RouterGroup, conf *context.Config) {
 		}
 		myLogger.Info(common.UpdateUserMsg + "params " + string(data))
 
-		if id == 0 {
-			myLogger.Info(common.UpdateUserMsg + common.IdEmpty)
-			apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.IdEmpty)
-			return
-		}
-		myLogger.Info(common.UpdateUserMsg + "id: " + stringId)
-
 		if err == nil {
+			if id == 0 {
+				myLogger.Info(common.UpdateUserMsg + common.IdEmpty)
+				apis.FormatResponseWithoutData(c, common.ParamErrorCode, common.IdEmpty)
+				return
+			}
+			myLogger.Info(common.UpdateUserMsg + "id: " + stringId)
+
 			userInfo := userService.Show(id)
 			logData, err := json.Marshal(userInfo)
 			if err != nil {
@@ -333,6 +334,3 @@ func UpdateUser(router *gin.RouterGroup, conf *context.Config) {
 		}
 	})
 }
-
-//todo flags debug
-//TODO 跟原来的值一样时报500

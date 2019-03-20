@@ -91,7 +91,7 @@ func (r *Grant) ShowByRoleIdResourceId(roleId int, resourceId int) (roleResource
 
 //update userRole
 func (r *Grant) UpdateUserRole(updateUserRole iodsp.UserRole) error {
-	updateErr := r.db.Unscoped().Save(updateUserRole).Error
+	updateErr := r.db.Unscoped().Save(&updateUserRole).Error
 	return updateErr
 }
 
@@ -109,6 +109,6 @@ func (r *Grant) ShowByResourceIdRoleIdIncDel(resourceId int, roleId int) (roleRe
 
 //update roleResource
 func (r *Grant) UpdateResourceRole(updateResourceRole iodsp.RoleResource) error {
-	updateErr := r.db.Unscoped().Save(updateResourceRole).Error
+	updateErr := r.db.Unscoped().Save(&updateResourceRole).Error
 	return updateErr
 }

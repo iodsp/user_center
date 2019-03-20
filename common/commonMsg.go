@@ -55,3 +55,4 @@ const UserNotResource = "The user can not call this resource!"
 //resource
 const ResourceIdEmpty = "ResourceId is Empty!"
 const ResourceUrlEmpty = "Resource url is Empty!"
+const DuplicatedUrlMsg = "Url is duplicated!"

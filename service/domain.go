@@ -41,37 +41,37 @@ func (r *Domain) StoreDomain(params params.DomainParams) error {
 }
 
 //find a Domain by name
-func (r *Domain) ShowDomainByName(name string) (Domain iodsp.Domain){
-	r.db.Where(&iodsp.Domain{Name: name}).First(&Domain)
-	return Domain
+func (r *Domain) ShowDomainByName(name string) (domain iodsp.Domain){
+	r.db.Where(&iodsp.Domain{Name: name}).First(&domain)
+	return domain
 }
 
 //find a Domain by name not id
-func (r *Domain) ShowDomainByNameNotId(name string, id int) (Domain iodsp.Domain){
-	r.db.Where(&iodsp.Domain{Name: name}).Not("id", id).First(&Domain)
-	return Domain
+func (r *Domain) ShowDomainByNameNotId(name string, id int) (domain iodsp.Domain){
+	r.db.Where(&iodsp.Domain{Name: name}).Not("id", id).First(&domain)
+	return domain
 }
 
 //find a Domain by id
-func (r *Domain) ShowDomain(id int) (Domain iodsp.Domain){
-	r.db.Where(&iodsp.Domain{Id: id}).First(&Domain)
-	return Domain
+func (r *Domain) ShowDomain(id int) (domain iodsp.Domain){
+	r.db.Where(&iodsp.Domain{Id: id}).First(&domain)
+	return domain
 }
 
 //Domain list
-func (r *Domain) DomainList() (Domains []iodsp.Domain){
-	r.db.Model(&iodsp.Domain{}).Order("id desc").Find(&Domains)
-	return Domains
+func (r *Domain) DomainList() (domains []iodsp.Domain){
+	r.db.Model(&iodsp.Domain{}).Order("id desc").Find(&domains)
+	return domains
 }
 
 //update Domain
-func (r *Domain) UpdateDomain(Domain iodsp.Domain) error {
-	updateErr := r.db.Save(Domain).Error
+func (r *Domain) UpdateDomain(domain iodsp.Domain) error {
+	updateErr := r.db.Save(&domain).Error
 	return updateErr
 }
 
 //delete Domain
-func (r *Domain) DeleteDomain(Domain iodsp.Domain) error {
-	deleteError := r.db.Delete(&Domain).Error
+func (r *Domain) DeleteDomain(domain iodsp.Domain) error {
+	deleteError := r.db.Delete(&domain).Error
 	return deleteError
 }
